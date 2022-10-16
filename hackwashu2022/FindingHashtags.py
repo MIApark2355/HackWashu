@@ -8,12 +8,11 @@ import pandas as pd
 import re
 from collections import Counter
 
-#list and dictionary for hashtags
+#List and dictionary for scraped hashtags
 tag_lst=[]
 freq = {}
 
 browser = webdriver.Chrome()
-browser.maximize_window()
 browser.get("http://www.instagram.com/")
 
 #input user id
@@ -29,10 +28,11 @@ input_PW.clear()
 input_PW.send_keys(user_PW)
 input_PW.submit()
 
-time.sleep(8)
+#Move to profile page
+time.sleep(15)
 browser.get('http://www.instagram.com/'+user_ID+"/")
 
-#method to move to the next post
+#Method to move to the next post
 def to_next(browser):
     b0=WebDriverWait(browser,15).until(EC.presence_of_element_located(((By.CSS_SELECTOR, 'div._aaqg._aaqh'))))
     b0.click()
@@ -47,7 +47,7 @@ def get_hashtags(browser):
     except:
         content=''
 
-    tags=re.findall(r'#[^\s#,\\]+',content)
+    tags=re.findall(r'#[^\s#,\\]+',content) #Find hashtags
 
     tag=''.join(tags).replace("#"," ")
     tag_data = tag.split()
@@ -55,6 +55,7 @@ def get_hashtags(browser):
     for x in tag_data:
         tag_lst.append(x)
 
+    tag_lst.remove(input_word)
     data = [tags]
     return data
 
@@ -65,13 +66,14 @@ input_word= input("Enter a word: ")
 browser.get("http://www.instagram.com/explore/tags/"+str(input_word))
 time.sleep(5)
 
-#Moving to the first post
+#Move to the first post
 b1=WebDriverWait(browser,15).until(EC.presence_of_element_located((By.CSS_SELECTOR,'div._aagw')))
 b1.click()
 time.sleep(3)
 
-#Number of posts you want to scrap
+#Users input the number of posts you want to scrape
 num_posts=input("How many posts do you want to check?: ")
+
 results=[]
 for i in range(int(num_posts)):
     try:
@@ -86,7 +88,7 @@ results_df = pd.DataFrame(results)
 results_df.columns=['Hashtags']
 results_df.to_excel('hashtags.xlsx')
 
-#method to get the frequency of hashtags
+#Method to get the frequency of hashtags in the dictionary, "freq"
 def all_freq(list):
     for x in list:
         if(x!=input_word):
@@ -101,9 +103,8 @@ def all_freq(list):
         print(k+' : ' +str(v))
     return freq
 
-#method to get the most frequent tags
-def most_freq(list):
-    list.remove(input_word) #list without input_word
+#Method to get the most frequent tags
+def most_freq(list):  #list excluding input_word
     c = Counter(list)
     d = c.most_common(1)
     max_num=0
